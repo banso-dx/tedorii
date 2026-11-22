@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tedorii",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "tedorii-rails",
+      "runtimeExecutable": "bin/rails",
+      "runtimeArgs": ["server", "-p", "4000"],
+      "port": 4000
+    }
+  ]
+}
