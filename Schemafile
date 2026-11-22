@@ -5,7 +5,7 @@
 # avg_annual_salary_yen(生の年収)のみを管理し、手取りはフロントエンド側で
 # calculateTakeHome()を使って表示時に算出する。
 
-create_table "industries", id: :uuid, force: :cascade do |t|
+create_table "industries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.text "name", null: false
   t.text "slug", null: false
   t.datetime "created_at", null: false
@@ -13,7 +13,7 @@ create_table "industries", id: :uuid, force: :cascade do |t|
   t.index ["slug"], name: "index_industries_on_slug", unique: true
 end
 
-create_table "companies", id: :uuid, force: :cascade do |t|
+create_table "companies", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.text "name", null: false
   t.text "slug", null: false
   t.uuid "industry_id", null: false
@@ -31,7 +31,7 @@ create_table "companies", id: :uuid, force: :cascade do |t|
 end
 add_foreign_key "companies", "industries", on_delete: :restrict
 
-create_table "salary_data_points", id: :uuid, force: :cascade do |t|
+create_table "salary_data_points", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.uuid "company_id", null: false
   t.string "position", null: false
   t.string "age_band", null: false
@@ -49,7 +49,7 @@ create_table "salary_data_points", id: :uuid, force: :cascade do |t|
 end
 add_foreign_key "salary_data_points", "companies", on_delete: :cascade
 
-create_table "take_home_aggregates", id: :uuid, force: :cascade do |t|
+create_table "take_home_aggregates", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.uuid "company_id", null: false
   t.string "position"
   t.string "age_band"
@@ -62,7 +62,7 @@ create_table "take_home_aggregates", id: :uuid, force: :cascade do |t|
 end
 add_foreign_key "take_home_aggregates", "companies", on_delete: :cascade
 
-create_table "tax_rule_sets", id: :uuid, force: :cascade do |t|
+create_table "tax_rule_sets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.integer "fiscal_year", null: false
   t.jsonb "income_tax_brackets", null: false
   t.decimal "resident_tax_rate", precision: 5, scale: 4, null: false
@@ -72,7 +72,7 @@ create_table "tax_rule_sets", id: :uuid, force: :cascade do |t|
   t.index ["fiscal_year"], name: "index_tax_rule_sets_on_fiscal_year", unique: true
 end
 
-create_table "job_agents", id: :uuid, force: :cascade do |t|
+create_table "job_agents", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.text "name", null: false
   t.text "slug", null: false
   t.string "logo_url"
@@ -85,7 +85,7 @@ create_table "job_agents", id: :uuid, force: :cascade do |t|
   t.index ["slug"], name: "index_job_agents_on_slug", unique: true
 end
 
-create_table "agent_placements", id: :uuid, force: :cascade do |t|
+create_table "agent_placements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.uuid "agent_id", null: false
   t.string "target_type", null: false
   t.string "target_id"
@@ -96,7 +96,7 @@ create_table "agent_placements", id: :uuid, force: :cascade do |t|
 end
 add_foreign_key "agent_placements", "job_agents", column: "agent_id", on_delete: :cascade
 
-create_table "referral_clicks", id: :uuid, force: :cascade do |t|
+create_table "referral_clicks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.uuid "agent_id", null: false
   t.uuid "company_id"
   t.text "page_path", null: false
@@ -110,7 +110,7 @@ end
 add_foreign_key "referral_clicks", "job_agents", column: "agent_id", on_delete: :cascade
 add_foreign_key "referral_clicks", "companies", on_delete: :nullify
 
-create_table "submissions", id: :uuid, force: :cascade do |t|
+create_table "submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
   t.uuid "company_id", null: false
   t.string "contact_email"
   t.string "position", null: false

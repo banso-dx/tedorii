@@ -9,6 +9,31 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tedorii"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+    command: bundle exec rails server -b 0.0.0.0 -p 3000
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "4000:3000"
+    environment:
+      DB_HOST: db
+      DB_USERNAME: tedorii
+      DB_PASSWORD: password
+      DB_PORT: 5432
+      RAILS_ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  bundle_cache:

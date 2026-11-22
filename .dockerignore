@@ -1,0 +1,8 @@
+.git
+frontend
+log/*
+tmp/*
+storage/*
+docs
+.claude
+*.md

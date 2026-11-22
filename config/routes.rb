@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Renderのヘルスチェック用。DBに触らず即200を返す。
+  get "healthz", to: proc { [200, {}, ["ok"]] }
+
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
 

@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+# スキーマ(Schemafile)とサンプルデータを反映してから起動する。
+# 両方冪等なので、デプロイ・再起動のたびに実行しても安全。
+bundle exec ridgepole -c config/database.yml -E "${RAILS_ENV:-development}" -f Schemafile --apply
+bundle exec rails db:seed
+
+exec "$@"
