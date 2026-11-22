@@ -33,6 +33,13 @@ module Types
       TakeHomeAggregate.all
     end
 
+    # 承認済み(is_published)の生データ行。actual_monthly_take_home_yenが入っている行は
+    # 給与明細の実測値、nullの行はcalculateTakeHome()による推定値をフロント側で使う。
+    field :salary_data_points, [Types::SalaryDataPointType], null: false
+    def salary_data_points
+      SalaryDataPoint.where(is_published: true)
+    end
+
     field :job_agents, [Types::JobAgentType], null: false
     def job_agents
       JobAgent.where(is_active: true)
