@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "@/lib/api/client"
+import { graphqlRequest } from "@/lib/api/client"
 import type { AgentPlacementRaw, JobAgentRaw } from "@/lib/api/types"
 
 type PlacementContext = {
@@ -8,11 +8,17 @@ type PlacementContext = {
 }
 
 async function fetchAgents(): Promise<JobAgentRaw[]> {
-  return apiGet<JobAgentRaw[]>("/api/v1/job_agents")
+  const data = await graphqlRequest<{ jobAgents: JobAgentRaw[] }>(
+    `{ jobAgents { agentId name slug logoUrl targetSegment referralUrlTemplate commissionType } }`
+  )
+  return data.jobAgents
 }
 
 async function fetchPlacements(): Promise<AgentPlacementRaw[]> {
-  return apiGet<AgentPlacementRaw[]>("/api/v1/agent_placements")
+  const data = await graphqlRequest<{ agentPlacements: AgentPlacementRaw[] }>(
+    `{ agentPlacements { agentId targetType targetId priority } }`
+  )
+  return data.agentPlacements
 }
 
 /**
@@ -66,13 +72,26 @@ export async function recordReferralClick(input: {
   sessionId?: string | null
   utmParams?: Record<string, string>
 }) {
-  await apiPost("/api/v1/referral_clicks", {
-    agentId: input.agentId,
-    companyId: input.companyId ?? null,
-    pagePath: input.pagePath,
-    sessionId: input.sessionId ?? null,
-    utmParams: input.utmParams ?? null,
-  })
+  await graphqlRequest(
+    `mutation($agentId: ID!, $companyId: ID, $pagePath: String!, $sessionId: String, $utmParams: JSON) {
+      createReferralClick(input: {
+        agentId: $agentId
+        companyId: $companyId
+        pagePath: $pagePath
+        sessionId: $sessionId
+        utmParams: $utmParams
+      }) {
+        success
+      }
+    }`,
+    {
+      agentId: input.agentId,
+      companyId: input.companyId ?? null,
+      pagePath: input.pagePath,
+      sessionId: input.sessionId ?? null,
+      utmParams: input.utmParams ?? null,
+    }
+  )
 }
 
 export function buildReferralUrl(referralUrlTemplate: string, utm: Record<string, string>) {

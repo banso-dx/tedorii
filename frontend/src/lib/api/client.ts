@@ -1,26 +1,27 @@
 const RAILS_API_URL = process.env.RAILS_API_URL ?? "http://localhost:4000"
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${RAILS_API_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+type GraphQLResponse<T> = {
+  data?: T
+  errors?: Array<{ message: string }>
+}
+
+export async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const res = await fetch(`${RAILS_API_URL}/graphql`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
     cache: "no-store",
   })
 
   if (!res.ok) {
-    throw new Error(`Rails API error ${res.status} on ${path}`)
+    throw new Error(`Rails GraphQL API error ${res.status}`)
   }
 
-  if (res.status === 204) return undefined as T
+  const json = (await res.json()) as GraphQLResponse<T>
 
-  const text = await res.text()
-  return (text ? JSON.parse(text) : undefined) as T
-}
+  if (json.errors?.length) {
+    throw new Error(`GraphQL error: ${json.errors.map((e) => e.message).join(", ")}`)
+  }
 
-export function apiGet<T>(path: string): Promise<T> {
-  return request<T>(path)
-}
-
-export function apiPost<T>(path: string, body: unknown): Promise<T> {
-  return request<T>(path, { method: "POST", body: JSON.stringify(body) })
+  return json.data as T
 }

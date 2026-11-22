@@ -1,16 +1,14 @@
-import { apiGet } from "@/lib/api/client"
+import { graphqlRequest } from "@/lib/api/client"
 import type { CompanyRaw, IndustryRaw, JobAgentRaw } from "@/lib/api/types"
 
 export async function getSiteStats() {
-  const [companies, industries, agents] = await Promise.all([
-    apiGet<CompanyRaw[]>("/api/v1/companies"),
-    apiGet<IndustryRaw[]>("/api/v1/industries"),
-    apiGet<JobAgentRaw[]>("/api/v1/job_agents"),
-  ])
+  const data = await graphqlRequest<{ companies: CompanyRaw[]; industries: IndustryRaw[]; jobAgents: JobAgentRaw[] }>(
+    `{ companies { id } industries { id } jobAgents { agentId } }`
+  )
 
   return {
-    companyCount: companies.length,
-    industryCount: industries.length,
-    agentCount: agents.length,
+    companyCount: data.companies.length,
+    industryCount: data.industries.length,
+    agentCount: data.jobAgents.length,
   }
 }

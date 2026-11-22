@@ -1,17 +1,24 @@
-import { apiGet } from "@/lib/api/client"
+import { graphqlRequest } from "@/lib/api/client"
 import type { CompanyRaw, IndustryRaw, SalaryAggregateRaw } from "@/lib/api/types"
 import { calculateTakeHome, representativeAgeForBand } from "@/lib/takehome/calculate"
 
 async function fetchIndustries(): Promise<IndustryRaw[]> {
-  return apiGet<IndustryRaw[]>("/api/v1/industries")
+  const data = await graphqlRequest<{ industries: IndustryRaw[] }>(`{ industries { id name slug } }`)
+  return data.industries
 }
 
 async function fetchCompanies(): Promise<CompanyRaw[]> {
-  return apiGet<CompanyRaw[]>("/api/v1/companies")
+  const data = await graphqlRequest<{ companies: CompanyRaw[] }>(
+    `{ companies { id name slug employeeBand officialAvgSalaryYen industryId industryName industrySlug } }`
+  )
+  return data.companies
 }
 
 async function fetchAggregates(): Promise<SalaryAggregateRaw[]> {
-  return apiGet<SalaryAggregateRaw[]>("/api/v1/salary_aggregates")
+  const data = await graphqlRequest<{ salaryAggregates: SalaryAggregateRaw[] }>(
+    `{ salaryAggregates { id companyId position ageBand avgAnnualSalaryYen sampleSize } }`
+  )
+  return data.salaryAggregates
 }
 
 export async function listIndustries() {

@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/api/client"
+import { graphqlRequest } from "@/lib/api/client"
 import type { CompanyRaw, SalaryAggregateRaw } from "@/lib/api/types"
 import { calculateTakeHome, representativeAgeForBand } from "@/lib/takehome/calculate"
 
@@ -6,12 +6,41 @@ function takeHomeFor(avgAnnualSalaryYen: number, ageBand: string | null) {
   return calculateTakeHome(avgAnnualSalaryYen, representativeAgeForBand(ageBand)).takeHomeAnnualYen
 }
 
+const COMPANY_FIELDS = `
+  id
+  name
+  slug
+  employeeBand
+  hqPrefecture
+  isListed
+  establishedYear
+  officialAvgSalaryYen
+  logoUrl
+  description
+  industryId
+  industryName
+  industrySlug
+`
+
+const SALARY_AGGREGATE_FIELDS = `
+  id
+  companyId
+  position
+  ageBand
+  avgAnnualSalaryYen
+  sampleSize
+`
+
 async function fetchCompanies(): Promise<CompanyRaw[]> {
-  return apiGet<CompanyRaw[]>("/api/v1/companies")
+  const data = await graphqlRequest<{ companies: CompanyRaw[] }>(`{ companies { ${COMPANY_FIELDS} } }`)
+  return data.companies
 }
 
 async function fetchAggregates(): Promise<SalaryAggregateRaw[]> {
-  return apiGet<SalaryAggregateRaw[]>("/api/v1/salary_aggregates")
+  const data = await graphqlRequest<{ salaryAggregates: SalaryAggregateRaw[] }>(
+    `{ salaryAggregates { ${SALARY_AGGREGATE_FIELDS} } }`
+  )
+  return data.salaryAggregates
 }
 
 function overallAggregateFor(aggregates: SalaryAggregateRaw[], companyId: string) {
