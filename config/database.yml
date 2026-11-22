@@ -85,12 +85,15 @@ test:
 #
 production:
   <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
   database: tedorii_production
   username: tedorii
   password: <%= ENV["TEDORII_DATABASE_PASSWORD"] %>
 
-# RenderのstgサービスはRAILS_ENV=stagingで起動する。DATABASE_URL(Renderが自動設定)が
-# あればadapter/host/username/password等を上書きするので、ここはプレースホルダでよい。
+# RenderのstgサービスはRAILS_ENV=stagingで起動する。DATABASE_URLが未指定だと
+# defaultのhost/username/password(127.0.0.1等)がそのまま使われてしまうため、
+# url:で明示的にDATABASE_URLを優先させる(DATABASE_URL未設定時は他のキーにフォールバック)。
 staging:
   <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
   database: tedorii_staging
