@@ -88,3 +88,9 @@ production:
   database: tedorii_production
   username: tedorii
   password: <%= ENV["TEDORII_DATABASE_PASSWORD"] %>
+
+# RenderのstgサービスはRAILS_ENV=stagingで起動する。DATABASE_URL(Renderが自動設定)が
+# あればadapter/host/username/password等を上書きするので、ここはプレースホルダでよい。
+staging:
+  <<: *default
+  database: tedorii_staging
