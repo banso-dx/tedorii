@@ -1,7 +1,9 @@
 #!/bin/bash -e
 
-# スキーマ(Schemafile)とサンプルデータを反映してから起動する。
-# 両方冪等なので、デプロイ・再起動のたびに実行しても安全。
+# スキーマ(Schemafile)・Rails標準migration(Devise/ActiveAdmin用)・サンプルデータを
+# 反映してから起動する。すべて冪等なので、デプロイ・再起動のたびに実行しても安全。
+bundle exec rails db:create 2>/dev/null || true
+bundle exec rails db:migrate
 bundle exec ridgepole -c config/database.yml -E "${RAILS_ENV:-development}" -f Schemafile --apply
 bundle exec rails db:seed
 
