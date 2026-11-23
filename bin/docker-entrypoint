@@ -1,10 +1,23 @@
 #!/bin/bash -e
 
-# スキーマ(Schemafile)・Rails標準migration(Devise/ActiveAdmin用)・サンプルデータを
-# 反映してから起動する。すべて冪等なので、デプロイ・再起動のたびに実行しても安全。
-bundle exec rails db:create 2>/dev/null || true
-bundle exec rails db:migrate
-bundle exec ridgepole -c config/database.yml -E "${RAILS_ENV:-development}" -f Schemafile --apply
-bundle exec rails db:seed
+# 初回(または未セットアップ)のみmigrate/ridgepole apply/seedを実行する。
+# Render無料プランはスリープ復帰ごとにコンテナを起動し直すため、毎回実行すると
+# コールドスタートが遅くなりVercel側のタイムアウトを誘発する。
+# DATABASE_URL(Render等)がある場合のみ、companiesテーブルの有無で判定してスキップする。
+# ローカルdocker-compose(DATABASE_URL未設定)では常に実行する(冪等なので無害)。
+should_setup=true
+
+if [ -n "$DATABASE_URL" ]; then
+  if psql "$DATABASE_URL" -tAc "SELECT to_regclass('public.companies') IS NOT NULL" 2>/dev/null | grep -q t; then
+    should_setup=false
+  fi
+fi
+
+if [ "$should_setup" = true ]; then
+  bundle exec rails db:create 2>/dev/null || true
+  bundle exec rails db:migrate
+  bundle exec ridgepole -c config/database.yml -E "${RAILS_ENV:-development}" -f Schemafile --apply
+  bundle exec rails db:seed
+fi
 
 exec "$@"
